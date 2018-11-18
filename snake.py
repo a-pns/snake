@@ -1,4 +1,6 @@
 from graphics import *
+from board import *
+import copy
 
 
 class Direction():
@@ -37,20 +39,32 @@ class Snake:
     def move(self,fruit, do_move = True, direction = None):
         if direction is None:
             direction = self.direction
+        if not do_move:
+            old_position = copy.deepcopy(self.body_parts)
+        else:
+            old_position = self.body_parts
         temp_body_parts = []
         i = 0
+        old_x = 0
+        old_y = 0
         for i in range(len(self.body_parts)):
-            part = self.body_parts[i]
+            part = old_position[i]
             if part.body_type == 1:
                 # if head then move 1 place in 1 direction
-                temp_body_parts.append(SnakeBodyPart(part.x + direction[0], part.y + direction[1], part.body_type))
+                old_x = part.x
+                old_y = part.y
+                part.set_new_position(part.x + direction[0], part.y + direction[1])
+                temp_body_parts.append(part)
             else:
                 # if not head then take place of pre-ceeding body part
-                part = self.body_parts[i-1]
-                temp_body_parts.append(SnakeBodyPart(part.x, part.y, 2))
+                temp_old_x = part.x
+                temp_old_y = part.y
+                part.set_new_position(old_x, old_y)
+                temp_body_parts.append(part)
+                old_x = temp_old_x
+                old_y = temp_old_y
         if self.has_eaten(fruit, temp_body_parts) and do_move:
-            part = self.body_parts[len(self.body_parts)-1]
-            temp_body_parts.append(SnakeBodyPart(part.x, part.y, 2))
+            temp_body_parts.append(SnakeBodyPart(old_x, old_y, 2))
         if do_move:
             self.body_parts = temp_body_parts
         else:
@@ -58,13 +72,7 @@ class Snake:
 
     def draw(self,board, graph):
         for part in self.body_parts:
-            cir = Circle(Point(board.CELL_HEIGHT_WIDTH * part.x + board.CELL_HEIGHT_WIDTH/2, board.CELL_HEIGHT_WIDTH * part.y + board.CELL_HEIGHT_WIDTH/2), board.CELL_HEIGHT_WIDTH / 2)
-            cir.setOutline('red')
-            if part.body_type == 1:
-                cir.setFill('red')
-            else:
-                cir.setFill('blue')
-            cir.draw(graph)
+            part.draw(board, graph)
 
     def is_dead(self, board):
         head = self.body_parts[0]
@@ -78,11 +86,14 @@ class Snake:
     def head(self):
         return self.body_parts[0]
 
-    def __str__(self):
-        snake_str = ""
+    def contains_pos(self, x, y):
         for part in self.body_parts:
-            snake_str += ", ({p}})".format(p=part)
-        return snake_str
+            if part.x == x and part.y == y:
+                return True
+        return False
+
+    def __str__(self):
+        return ", ".join(str(part) for part in self.body_parts)
 
     def __repr__(self):
         return self.__str__()
@@ -93,9 +104,34 @@ class SnakeBodyPart:
         self.x = x;
         self.y = y;
         self.body_type = body_type
+        self.circle = None
+        self.drawn = False
 
     def __str__(self):
         return "{x},{y},{t}".format(x=self.x,y=self.y,t=self.body_type)
 
     def __repr__(self):
         return self.__str__()
+
+    def set_new_position(self, x, y):
+        if self.circle is not None:
+            x_diff = (Board.CELL_HEIGHT_WIDTH * x + Board.CELL_HEIGHT_WIDTH/2) - (Board.CELL_HEIGHT_WIDTH * self.x + Board.CELL_HEIGHT_WIDTH/2)
+            y_diff = (Board.CELL_HEIGHT_WIDTH * y + Board.CELL_HEIGHT_WIDTH/2) - (Board.CELL_HEIGHT_WIDTH * self.y + Board.CELL_HEIGHT_WIDTH/2)
+            self.circle.move(x_diff, y_diff)
+        self.x = x
+        self.y = y
+
+    def draw(self, board, graph):
+        if self.circle is None:
+            self.circle = Circle(Point(board.CELL_HEIGHT_WIDTH * self.x + board.CELL_HEIGHT_WIDTH/2, board.CELL_HEIGHT_WIDTH * self.y + board.CELL_HEIGHT_WIDTH/2), board.CELL_HEIGHT_WIDTH / 2)
+            self.circle.setOutline('red')
+            if self.body_type == 1:
+                self.circle.setFill('red')
+            else:
+                self.circle.setFill('blue')
+        if not self.drawn:
+            self.circle.draw(graph)
+            self.drawn = True
+
+    def __deepcopy__(self, memo):
+        return SnakeBodyPart(self.x, self.y, self.body_type)

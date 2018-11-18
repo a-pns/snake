@@ -20,12 +20,14 @@ class Board:
         )
         self.board_state = self.new_board_state()
 
+        self.drawn = False
 
     def draw_board(self, graph):
-
-        self.board_background = Rectangle(self.top_left, self.bottom_right)
-        self.board_background.setFill('white')
-        self.board_background.draw(graph)
+        if not self.drawn:
+            self.board_background = Rectangle(self.top_left, self.bottom_right)
+            self.board_background.setFill('white')
+            self.board_background.draw(graph)
+            self.drawn = True
         for x in range(self.columns):
             for y in range(self.rows):
                 cell = Rectangle(
