@@ -1,9 +1,9 @@
 from graphics import *
 import time
-from board import Board
-from snake import *
-from fruit import *
-from player import *
+from objects.board import Board
+from objects.snake import *
+from objects.fruit import *
+from players.onemoveplayer import *
 import random
 import datetime
 
@@ -51,13 +51,14 @@ class Game:
             self.game_is_dead = True
 
     def draw(self):
+        self.board.draw_board(self.window)
         self.fruit.draw(self.board, self.window)
         self.snake.draw(self.board, self.window)
         self.window.flush()
 
 if __name__ == "__main__":
     sim_speed = 0.1
-    player = Player(1,10,10)
+    player = OneMovePlayer(10,10)
     the_game = Game(player, 10, 10, sim_speed)
     the_game.run()
     time.sleep(5)

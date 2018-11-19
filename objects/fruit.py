@@ -1,5 +1,5 @@
 from graphics import *
-from board import *
+from objects.board import *
 
 class Fruit:
     def __init__(self, x, y):

@@ -1,14 +1,10 @@
-from snake import *
-class Player:
+from players import Player
+from utils import Direction
 
-    def __init__(self, cal_future, columns, rows):
-        self.calc_future = cal_future
-        self.columns = columns
-        self.rows = rows
-        pass
 
-    def choose_move(self, snake, board):
-        pass
+class OneMovePlayer(Player):
+    def __init__(self, columns, rows):
+        super(OneMovePlayer, self).__init__(columns, rows)
 
     def how_close_in_direction(self, snake, direction):
         head = snake.head()
